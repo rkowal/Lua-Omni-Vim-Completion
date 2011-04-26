@@ -1,0 +1,4 @@
+Things to do for 0.1x versions:
+  * better functions and global assignments listing
+  * outline window
+  * tables constructor scanning for prototypes hints
