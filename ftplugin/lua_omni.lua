@@ -31,6 +31,8 @@ end
 -- @param line line number to be checked for being within function' body
 -- @return table with list of assignments
 function find_assigments(buf, line)
+  -- TODO There is duplication of lines which could be avoided using a loop
+  -- (aesthetic deal mostly).
   if not line then
     buf = vim.window().buffer
     line = vim.window().line
@@ -48,6 +50,26 @@ function find_assigments(buf, line)
       set[sts] = absidx
       table.insert(list, sts)
     end
+	-- Check for variables defined without assignments as local. It may
+	-- generate redundant match but conditions in gsub's argument functions
+	-- will make it get correct results.
+	sts = string.match(buf[lineidx], 'local%s+([^=]+)')
+	if sts then
+	  -- iterate over local variable names
+      string.gsub(sts, '([^, ]+)', function(s)
+        if not set[s] or (set[s] > absidx) then
+          set[s] = absidx
+          table.insert(list, s)
+        end
+      end)
+	end
+	-- function names matching
+	sts = string.match(buf[lineidx], 'function%s+(' .. PATTERN_LUA_IDENTIFIER .. ')%s*%(')
+    if sts and (not set[sts] or (set[sts] > absidx)) then
+      -- set new key or replace but only if the new absolute index is smaller
+      set[sts] = absidx
+      table.insert(list, sts)
+	end
     -- check for variables defined in functions statements
     sts = string.match(buf[lineidx], 'function%s*[^(]*%(([^)]+)%)')
     if sts then
