@@ -26,7 +26,9 @@ let s:save_cpo = &cpo
 set cpo&vim
                      
 " source Lua...
-luafile ~/.vim/ftplugin/lua_omni.lua
+" use relative path lua_omni.lua is in the same folder as this script
+let s:luaFilePath = expand('<sfile>:p:h') . "/lua_omni.lua"
+execute "luafile " . s:luaFilePath
 
 " options...
 set shiftwidth=2
